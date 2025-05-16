@@ -21,7 +21,7 @@ class Query_OpenAI:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "model": (MODELS, ),
+                "model": (MODELS, {"default": "gpt-40-mini"}),
                 "max_tokens": ("INT", {"default": 300}),
                 "temperature": ("FLOAT", {"default": 0.5}),
                 "system_prompt": ("STRING", {"default": ""}),
@@ -118,8 +118,38 @@ class JSON_Attachment:
 
     def json_attachment(self, JSON_in):
         jsonOut = {
-            "type": "text_json",
-            "text_json": {"url": f"data:test/json,{json.dumps(JSON_in)}"}
+            "type": "text",
+            "text": f"Here is some JSON content:\n{json.dumps(JSON_in)}"
+        }
+
+        return {"ui": {"json": jsonOut}, "result": (jsonOut,)}
+
+
+class String_Attachment:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "text_in": ("STRING", {"forceInput": True}),
+                "text_type": (["text", "markdown", "HTML", "JSON"], {"default": "text"}),
+            },
+            "optional": {
+                "identifier": ("STRING", {"forceInput": True}),
+            },
+        }
+
+    CATEGORY = "openai"
+    RETURN_TYPES = ("JSON",)
+    RETURN_NAMES = ("attachment",)
+    FUNCTION = "string_attachment"
+
+    def json_attachment(self, text_in, text_type, identifier=None):
+        extraText = ""
+        if identifier is not None:
+            extraText = f" from {identifier}"
+        jsonOut = {
+            "type": "text",
+            "text": f"Here is some {text_type} content{extraText}:\n{text_in}"
         }
 
         return {"ui": {"json": jsonOut}, "result": (jsonOut,)}

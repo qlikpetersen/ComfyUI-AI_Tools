@@ -77,6 +77,7 @@ class CreateListJSON:
         }
 
     CATEGORY = "utils"
+    INPUT_IS_LIST = True
     OUTPUT_IS_LIST = (True,)
     RETURN_TYPES = ("JSON",)
     RETURN_NAMES = ("list",)
@@ -89,7 +90,8 @@ class CreateListJSON:
         # Collect all inputs from kwargs dynamically
         for _k, v in kwargs.items():
             if v is not None:
-                list.append(v)
+                for item in v:
+                    list.append(item)
         return (list,)
 
 
