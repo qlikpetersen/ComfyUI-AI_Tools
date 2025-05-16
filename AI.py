@@ -143,7 +143,7 @@ class String_Attachment:
     RETURN_NAMES = ("attachment",)
     FUNCTION = "string_attachment"
 
-    def json_attachment(self, text_in, text_type, identifier=None):
+    def string_attachment(self, text_in, text_type, identifier=None):
         extraText = ""
         if identifier is not None:
             extraText = f" from {identifier}"
