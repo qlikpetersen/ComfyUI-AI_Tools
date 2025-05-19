@@ -21,7 +21,8 @@ class Query_OpenAI:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "model": (MODELS, {"default": "gpt-40-mini"}),
+                "base_url": ("STRING", {"default": "https://api.openai.com/v1"}),
+                "model": (MODELS, {"default": "gpt-4o-mini"}),
                 "max_tokens": ("INT", {"default": 300}),
                 "temperature": ("FLOAT", {"default": 0.5}),
                 "system_prompt": ("STRING", {"default": ""}),
@@ -38,7 +39,7 @@ class Query_OpenAI:
     RETURN_NAMES = ("response",)
     FUNCTION = "queryAI"
 
-    def queryAI(self, model, max_tokens, temperature, system_prompt, user_prompt, attachments=None):
+    def queryAI(self, base_url, model, max_tokens, temperature, system_prompt, user_prompt, attachments=None):
         system_message = {"role": "system", "content": system_prompt[0]}
         user_message = {"role": "user", "content": [{"type": "text", "text": user_prompt[0]}]}
 
@@ -54,7 +55,7 @@ class Query_OpenAI:
 
         # Set up OpenAI client
         api_key = os.getenv("OPENAI_API_KEY")
-        client = openai.OpenAI(api_key=api_key)
+        client = openai.OpenAI(api_key=api_key, base_url=base_url[0])
 
         # Make API call to OpenAI
         response = client.chat.completions.create(
