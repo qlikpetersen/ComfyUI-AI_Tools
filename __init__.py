@@ -1,6 +1,7 @@
 from .webInteraction import DoLogin, HttpRequest
 from .stringTools import Json2String, String2Json, CreateListString, CreateListJSON
 from .AI import Query_OpenAI, Image_Attachment, JSON_Attachment, String_Attachment
+from .runPython import RunPython
 
 
 # A dictionary that contains all nodes you want to export with their names
@@ -16,6 +17,7 @@ NODE_CLASS_MAPPINGS = {
     "Image_Attachment": Image_Attachment,
     "JSON_Attachment": JSON_Attachment,
     "String_Attachment": String_Attachment,
+    "RunPython": RunPython,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -30,6 +32,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "Image_Attachment": "Image Attachment",
     "JSON_Attachment": "JSON Attachment",
     "String_Attachment": "String Attachment",
+    "RunPython": "Run Python",
 }
 
 __all__ = [

@@ -23,7 +23,7 @@ class Query_OpenAI:
             "required": {
                 "base_url": ("STRING", {"default": "https://api.openai.com/v1"}),
                 "model": (MODELS, {"default": "gpt-4o-mini"}),
-                "max_tokens": ("INT", {"default": 300}),
+                "max_tokens": ("INT", {"default": 16384, "min": 1, "max": 1100000000}),
                 "temperature": ("FLOAT", {"default": 0.5}),
                 "system_prompt": ("STRING", {"default": ""}),
                 "user_prompt": ("STRING", {"default": ""}),
