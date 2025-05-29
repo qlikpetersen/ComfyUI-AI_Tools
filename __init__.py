@@ -1,4 +1,4 @@
-from .webInteraction import DoLogin, HttpRequest
+from .webInteraction import DoLogin, HttpRequest, SpiderCrawl
 from .stringTools import Json2String, String2Json, CreateListString, CreateListJSON
 from .AI import Query_OpenAI, Image_Attachment, JSON_Attachment, String_Attachment
 from .runPython import RunPython
@@ -9,6 +9,7 @@ from .runPython import RunPython
 NODE_CLASS_MAPPINGS = {
     "DoLogin": DoLogin,
     "HttpRequest": HttpRequest,
+    "SpiderCrawl": SpiderCrawl,
     "Json2String": Json2String,
     "String2Json": String2Json,
     "CreateListString": CreateListString,
@@ -24,6 +25,7 @@ NODE_CLASS_MAPPINGS = {
 NODE_DISPLAY_NAME_MAPPINGS = {
     "DoLogin": "Login Webpage",
     "HttpRequest": "HTTP Request",
+    "SpiderCrawl": "Spider Crawl",
     "Json2String": "Json to String",
     "String2Json": "String to Json",
     "CreateListString": "CreateList(String)",

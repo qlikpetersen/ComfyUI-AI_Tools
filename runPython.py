@@ -38,7 +38,7 @@ class RunPython(AnyNode):
     FUNCTION = "doit"
 
     def doit(self, script, any=None, any2=None, unique_id=None, extra_pnginfo=None):
-        print(f"\nRUN-{unique_id}", any, any2, "\n")
+        print(f"\nRUN-{unique_id}", "\n")
 
         if script == "":
             return (any,)
