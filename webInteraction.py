@@ -60,8 +60,6 @@ class HttpRequest:
         return {
             "required": {
                 "urls": ("STRING", {"default": ""}),
-                "depth": ("INT", {"default": 1}),
-                "loop_context": ("BOOLEAN", {"default": True}),
             },
             "optional": {
                 "contexts": ("JSON", {"forceInput": True})
@@ -69,41 +67,48 @@ class HttpRequest:
         }
 
     CATEGORY = "web"
-    INPUT_IS_LIST = True
-    OUTPUT_IS_LIST = (True, True, True, True)
     RETURN_TYPES = ("STRING", "STRING", "STRING", "JSON")
     RETURN_NAMES = ("Return URL", "Page Text", "Page Raw", "Browser Context")
     FUNCTION = "httpRequest"
 
-    def httpRequest(self, urls, depth, loop_context, contexts=[]):
-        print(urls, depth, loop_context, contexts)
+    def httpRequest(self, urls, contexts=[]):
+        print(urls, contexts)
         urlsOut = []
         textsOut = []
         contentsOut = []
         contextsOut = []
+        if not isinstance(urls, list):
+            urls = [urls]
+        if not isinstance(contexts, list):
+            contexts = [contexts]
 
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=False)
             browser_context = browser.new_context()
             for index, url in enumerate(urls):
-                if not loop_context and len(contexts) > 1 and index > 0:
+                if len(contexts) > index:
                     browser_context = browser.new_context(storage_state=contexts[index])
-                elif not loop_context or (len(contexts) > 0 and index == 0):
-                    browser_context = browser.new_context(storage_state=contexts[0])
-                if index == 0 or not loop_context:
                     page = browser_context.new_page()
-                page.goto(url)
+                elif index == 0:
+                    page = browser_context.new_page()
+                page.goto(url, {'timeout': 120000})
                 page.wait_for_load_state()
-                page.wait_for_load_state(state="networkidle")
                 urlsOut.append(page.url)
                 textsOut.append(page.inner_text("html"))
                 contentsOut.append(page.content())
-                if loop_context:
+                if len(contexts) < 2:
                     contextsOut = [browser_context.storage_state()]
                 else:
                     contextsOut.append(browser_context.storage_state())
             browser.close()
 
+        if len(urlsOut) == 1:
+            return (
+                urlsOut[0],
+                textsOut[0],
+                contentsOut[0],
+                contextsOut[0],
+            )
         return (
             urlsOut,
             textsOut,
@@ -169,9 +174,8 @@ class SpiderCrawl:
             while urlsToScrape:
                 current_url, current_depth = urlsToScrape.pop(0)
                 print(f"URLs to scrape: {len(urlsToScrape)} | Current URL: {current_url} | Depth: {current_depth}")
-                page.goto(current_url)
+                page.goto(current_url, {'timeout': 120000})
                 page.wait_for_load_state()
-                # page.wait_for_load_state(state="networkidle")
                 loadedUrl = self.cleanup_urls(page.url, ignoreQueryParams)
                 current_url = self.cleanup_urls(current_url, ignoreQueryParams)
                 webData.update({
@@ -221,10 +225,7 @@ class SpiderCrawl:
                             webData[link]['rev_links'][page] = webData[page]
             print("Links fixed.")
             print(f"Total of {len(list(set([webData[page]['url'] for page in webData])))} individual pages.")
-        return (
-            webData,
-            contextOut,
-        )
+        return (webData, contextOut,)
 
     def cleanup_urls(self, urls, stripQueryParams=True):
         """
@@ -273,4 +274,4 @@ class SpiderCrawl:
         image = ImageOps.exif_transpose(Image.open(BytesIO(image))).convert("RGB")
         image = np.array(image).astype(np.float32) / 255.0
         image = torch.from_numpy(image)[None,]
-        return torch.cat([image], dim=0)
+        return image

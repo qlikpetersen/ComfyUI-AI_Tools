@@ -34,17 +34,16 @@ class Query_OpenAI:
         }
 
     CATEGORY = "openai"
-    INPUT_IS_LIST = True
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("response",)
     FUNCTION = "queryAI"
 
     def queryAI(self, base_url, model, max_tokens, temperature, system_prompt, user_prompt, attachments=None):
-        system_message = {"role": "system", "content": system_prompt[0]}
-        user_message = {"role": "user", "content": [{"type": "text", "text": user_prompt[0]}]}
+        system_message = {"role": "system", "content": system_prompt}
+        user_message = {"role": "user", "content": [{"type": "text", "text": user_prompt}]}
 
         print(type(attachments))
-        print(attachments)
+        # print(attachments)
 
         if attachments is not None:
             if isinstance(attachments, list):
@@ -55,14 +54,14 @@ class Query_OpenAI:
 
         # Set up OpenAI client
         api_key = os.getenv("OPENAI_API_KEY")
-        client = openai.OpenAI(api_key=api_key, base_url=base_url[0])
+        client = openai.OpenAI(api_key=api_key, base_url=base_url)
 
         # Make API call to OpenAI
         response = client.chat.completions.create(
-            model=model[0],
+            model=model,
             messages=[system_message, user_message],
-            max_tokens=max_tokens[0],
-            temperature=temperature[0],
+            max_tokens=max_tokens,
+            temperature=temperature,
         )
         if response.choices[0].message.content is None:
             raise ValueError("No content in response")
