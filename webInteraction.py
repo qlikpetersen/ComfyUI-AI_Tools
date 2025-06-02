@@ -174,7 +174,7 @@ class SpiderCrawl:
             while urlsToScrape:
                 current_url, current_depth = urlsToScrape.pop(0)
                 print(f"URLs to scrape: {len(urlsToScrape)} | Current URL: {current_url} | Depth: {current_depth}")
-                page.goto(current_url, {'timeout': 120000})
+                page.goto(current_url, timeout=120000)
                 page.wait_for_load_state()
                 loadedUrl = self.cleanup_urls(page.url, ignoreQueryParams)
                 current_url = self.cleanup_urls(current_url, ignoreQueryParams)
