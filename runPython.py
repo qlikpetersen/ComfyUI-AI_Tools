@@ -36,7 +36,6 @@ class RunPython(AnyNode):
     RETURN_TYPES = (any_type,)
     RETURN_NAMES = ('any',)
     FUNCTION = "doit"
-    OUTPUT_NODE = False
 
     def doit(self, script, any=None, any2=None, unique_id=None, extra_pnginfo=None):
         print(f"\nRUN-{unique_id}", "\n")
