@@ -182,10 +182,11 @@ class SpiderCrawl:
                     loadedUrl: {
                         "url": loadedUrl,
                         "data": page.content(),
-                        "screenshot": self.convertImage(page.screenshot(full_page=True)),
+                        "screenshot": page.screenshot(full_page=True),
                         "links": {},
                         "rev_links": {},
                         "depths_found": [current_depth-1],
+                        "context": browser_context.storage_state(),
                     }
                 })
                 if loadedUrl != current_url:
