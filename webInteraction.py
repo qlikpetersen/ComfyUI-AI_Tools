@@ -150,7 +150,7 @@ class SpiderCrawl:
         }
 
     CATEGORY = "web"
-    RETURN_TYPES = ("JSON", "JSON")
+    RETURN_TYPES = ("SPIDERDATA", "JSON")
     RETURN_NAMES = ("Web Data", "Browser Context")
     FUNCTION = "crawl"
 

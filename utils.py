@@ -130,3 +130,41 @@ class PNGtoImage:
         image = np.array(image).astype(np.float32) / 255.0
         image = torch.from_numpy(image)[None,]
         return (image,)
+
+
+class SaveSpiderData:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "filename": ("STRING", {"forceInput": True}),
+                "data": ("SPIDERDATA", {"forceInput": True}),
+            },
+        }
+
+    CATEGORY = "utils"
+    RETURN_TYPES = ()
+    RETURN_NAMES = ()
+    FUNCTION = "save_data"
+    OUTPUT_NODE = True
+
+    def save_data(self, filename, data):
+        outputData = {}
+        for page in data:
+            if data[page]['url'] == page:
+                outputData[page] = {
+                    "url": data[page]['url'],
+                    "data": data[page]['data'],
+                    "screenshot": data[page]['screenshot'],
+                    "links": {},
+                    "rev_links": {},
+                    "depths_found": data[page]['depths_found'],
+                }
+                for link in data[page]['links']:
+                    outputData[page]['links'][link] = None
+                for link in data[page]['rev_links']:
+                    outputData[page]['rev_links'][link] = None
+            else:
+                outputData[page] = None
+        with open(filename, 'w', encoding='utf-8') as f:
+            f.write(outputData)
