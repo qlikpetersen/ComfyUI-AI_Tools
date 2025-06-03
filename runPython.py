@@ -20,7 +20,7 @@ class RunPython(AnyNode):
             "required": {
                 "script": ("STRING", {
                     "multiline": True,
-                    "default": "",
+                    "default": "def generated_function(input_data_1=None, input_data_2=None):\n    return input_data_1\n",
                 }),
             },
             "optional": {
@@ -36,6 +36,7 @@ class RunPython(AnyNode):
     RETURN_TYPES = (any_type,)
     RETURN_NAMES = ('any',)
     FUNCTION = "doit"
+    OUTPUT_NODE = False
 
     def doit(self, script, any=None, any2=None, unique_id=None, extra_pnginfo=None):
         print(f"\nRUN-{unique_id}", "\n")
