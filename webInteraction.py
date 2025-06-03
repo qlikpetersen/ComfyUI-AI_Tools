@@ -172,6 +172,7 @@ class SpiderCrawl:
                 current_url, current_depth = urlsToScrape.pop(0)
                 print(f"URLs to scrape: {len(urlsToScrape)} | Current URL: {current_url} | Depth: {current_depth}")
                 if resetContextToBase and current_depth != 0:
+                    page.close()
                     if context:
                         browser_context = browser.new_context(storage_state=context)
                     else:
