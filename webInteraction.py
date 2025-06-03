@@ -1,8 +1,4 @@
 import re
-import torch
-import numpy as np
-from io import BytesIO
-from PIL import ImageOps, Image
 from urllib.parse import urljoin, urlparse
 from playwright.sync_api import sync_playwright
 
@@ -145,6 +141,7 @@ class SpiderCrawl:
                 "url": ("STRING", {"default": ""}),
                 "depth": ("INT", {"default": 0}),
                 "offsite": ("BOOLEAN", {"default": False}),
+                "resetContextToBase": ("BOOLEAN", {"default": True}),
                 "ignoreQueryParams": ("BOOLEAN", {"default": True}),
             },
             "optional": {
@@ -157,8 +154,8 @@ class SpiderCrawl:
     RETURN_NAMES = ("Web Data", "Browser Context")
     FUNCTION = "crawl"
 
-    def crawl(self, url, depth, offsite, ignoreQueryParams, context=None):
-        print(url, depth, offsite, context)
+    def crawl(self, url, depth, offsite, resetContextToBase, ignoreQueryParams, context=None):
+        print(url, depth, offsite, context, resetContextToBase, ignoreQueryParams)
         url = self.cleanup_urls(url, ignoreQueryParams)
         purl = urlparse(url)
         baseURL = f"{purl.scheme}://{purl.netloc}/"
@@ -174,6 +171,12 @@ class SpiderCrawl:
             while urlsToScrape:
                 current_url, current_depth = urlsToScrape.pop(0)
                 print(f"URLs to scrape: {len(urlsToScrape)} | Current URL: {current_url} | Depth: {current_depth}")
+                if resetContextToBase and current_depth != 0:
+                    if context:
+                        browser_context = browser.new_context(storage_state=context)
+                    else:
+                        browser_context = browser.new_context()
+                    page = browser_context.new_page()
                 page.goto(current_url, timeout=120000)
                 page.wait_for_load_state()
                 loadedUrl = self.cleanup_urls(page.url, ignoreQueryParams)
@@ -186,9 +189,10 @@ class SpiderCrawl:
                         "links": {},
                         "rev_links": {},
                         "depths_found": [current_depth-1],
-                        "context": browser_context.storage_state(),
                     }
                 })
+                if resetContextToBase:
+                    webData[loadedUrl].update({"context": browser_context.storage_state()})
                 if loadedUrl != current_url:
                     webData.update({current_url: webData[loadedUrl]})
                 for storedPage in webData:
@@ -211,6 +215,9 @@ class SpiderCrawl:
                             urlsToScrape.append((link, current_depth + 1))
                         if (not link.startswith('javascript:')):
                             webData[loadedUrl]['links'][cleaned_link] = None
+            contextOut = browser_context.storage_state()
+            if resetContextToBase:
+                contextOut = context
             contextOut = browser_context.storage_state()
             browser.close()
 
@@ -267,12 +274,3 @@ class SpiderCrawl:
 
         # Remove duplicates
         return list(set(links))
-
-    def convertImage(self, image):
-        """
-        Converts an image to Tensor format for ComfyUI.
-        """
-        image = ImageOps.exif_transpose(Image.open(BytesIO(image))).convert("RGB")
-        image = np.array(image).astype(np.float32) / 255.0
-        image = torch.from_numpy(image)[None,]
-        return image

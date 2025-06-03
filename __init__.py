@@ -1,5 +1,5 @@
 from .webInteraction import DoLogin, HttpRequest, SpiderCrawl
-from .stringTools import Json2String, String2Json, CreateListString, CreateListJSON
+from .utils import Json2String, String2Json, CreateListString, CreateListJSON, PNGtoImage
 from .AI import Query_OpenAI, Image_Attachment, JSON_Attachment, String_Attachment
 from .runPython import RunPython
 
@@ -14,6 +14,7 @@ NODE_CLASS_MAPPINGS = {
     "String2Json": String2Json,
     "CreateListString": CreateListString,
     "CreateListJSON": CreateListJSON,
+    "PNGtoImage": PNGtoImage,
     "Query_OpenAI": Query_OpenAI,
     "Image_Attachment": Image_Attachment,
     "JSON_Attachment": JSON_Attachment,
@@ -30,7 +31,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "String2Json": "String to Json",
     "CreateListString": "CreateList(String)",
     "CreateListJSON": "CreateList(JSON)",
-    "OpenAI": "Query OpenAI",
+    "PNGtoImage": "PNG to Image",
+    "Query_OpenAI": "Query OpenAI",
     "Image_Attachment": "Image Attachment",
     "JSON_Attachment": "JSON Attachment",
     "String_Attachment": "String Attachment",

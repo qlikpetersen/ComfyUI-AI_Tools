@@ -1,4 +1,8 @@
 import json
+import torch
+import numpy as np
+from io import BytesIO
+from PIL import ImageOps, Image
 
 
 class AnyType(str):
@@ -104,3 +108,25 @@ class CreateListString(CreateListJSON):
             },
         }
     RETURN_TYPES = ("STRING",)
+
+
+class PNGtoImage:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "image": ("PNG",),
+            },
+        }
+
+    CATEGORY = "utils/image"
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("image",)
+
+    FUNCTION = "png_to_image"
+
+    def png_to_image(self, image):
+        image = ImageOps.exif_transpose(Image.open(BytesIO(image))).convert("RGB")
+        image = np.array(image).astype(np.float32) / 255.0
+        image = torch.from_numpy(image)[None,]
+        return (image,)

@@ -1,11 +1,11 @@
-import io
 import os
 import openai
 import base64
-import numpy as np
-from PIL import Image
-from dotenv import load_dotenv
 import json
+import numpy as np
+from io import BytesIO
+from PIL import Image, ImageOps
+from dotenv import load_dotenv
 
 load_dotenv()
 MODELS = [
@@ -76,7 +76,7 @@ class Image_Attachment:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "image_in": ("IMAGE", {}),
+                "image_in": ("IMAGE|PNGIMAGE", {}),
             }
         }
 
@@ -86,13 +86,21 @@ class Image_Attachment:
     FUNCTION = "image_attachment"
 
     def image_attachment(self, image_in):
-        # Convert tensor to PIL Image
-        pil_image = Image.fromarray(np.clip(255. * image_in.cpu().numpy().squeeze(), 0, 255).astype(np.uint8))
-
-        # Convert PIL Image to base64
-        buffered = io.BytesIO()
-        pil_image.save(buffered, format="PNG")
-        img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+        if isinstance(image_in, bytes):
+            if not image_in.startswith(b'\x89PNG'):
+                # If the input is not PNG byte string, convert it
+                pil_image = ImageOps.exif_transpose(Image.open(BytesIO(image_in))).convert("RGB")
+                buffered = BytesIO()
+                pil_image.save(buffered, format="PNG")
+                image_in = buffered.getvalue()
+        else:
+            # Convert tensor to PIL Image
+            pil_image = Image.fromarray(np.clip(255. * image_in.cpu().numpy().squeeze(), 0, 255).astype(np.uint8))
+            # Convert PIL Image to PNG bytes
+            buffered = BytesIO()
+            pil_image.save(buffered, format="PNG")
+            image_in = buffered.getvalue()
+        img_str = base64.b64encode(image_in).decode("utf-8")
 
         jsonOut = {
             "type": "image_url",
