@@ -141,7 +141,7 @@ class SpiderCrawl:
                 "url": ("STRING", {"default": ""}),
                 "depth": ("INT", {"default": 0}),
                 "offsite": ("BOOLEAN", {"default": False}),
-                "resetContextToBase": ("BOOLEAN", {"default": True}),
+                "resetContextToBase": ("BOOLEAN", {"default": False}),
                 "ignoreQueryParams": ("BOOLEAN", {"default": True}),
             },
             "optional": {
