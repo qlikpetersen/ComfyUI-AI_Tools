@@ -144,8 +144,8 @@ class SaveSpiderData:
         }
 
     CATEGORY = "utils"
-    RETURN_TYPES = ()
-    RETURN_NAMES = ()
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("filename",)
     FUNCTION = "save_data"
     OUTPUT_NODE = True
 
@@ -169,3 +169,4 @@ class SaveSpiderData:
                 outputData[page] = None
         with open(filename, 'w', encoding='utf-8') as f:
             f.write(repr(outputData))
+        return (filename,)

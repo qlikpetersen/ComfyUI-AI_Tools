@@ -184,6 +184,10 @@ class SpiderCrawl:
                     page = browser_context.new_page()
                 page.goto(current_url, timeout=120000)
                 page.wait_for_load_state()
+                try:
+                    page.wait_for_load_state(state="networkidle")
+                except Exception as e:
+                    print(f"Warning: wait_for_load_state(networkidle) failed: {e}")
                 loadedUrl = self.cleanup_urls(page.url, ignoreQueryParams)
                 current_url = self.cleanup_urls(current_url, ignoreQueryParams)
                 webData.update({
