@@ -186,7 +186,7 @@ class LoadSpiderData:
     RETURN_NAMES = ("data",)
     FUNCTION = "load_data"
 
-    def load_data(self, filename, data):
+    def load_data(self, filename):
         with open(filename, 'r', encoding='utf-8') as f:
             data = eval(f.read())
         for page in data:
