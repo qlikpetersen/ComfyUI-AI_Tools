@@ -166,7 +166,37 @@ class SaveSpiderData:
                 for link in data[page]['rev_links']:
                     outputData[page]['rev_links'][link] = None
             else:
-                outputData[page] = None
+                outputData[page] = outputData[page]['url']
         with open(filename, 'w', encoding='utf-8') as f:
             f.write(repr(outputData))
         return (filename,)
+
+
+class LoadSpiderData:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "filename": ("STRING", {"forceInput": True}),
+            },
+        }
+
+    CATEGORY = "utils"
+    RETURN_TYPES = ("SPIDERDATA",)
+    RETURN_NAMES = ("data",)
+    FUNCTION = "load_data"
+
+    def load_data(self, filename, data):
+        with open(filename, 'r', encoding='utf-8') as f:
+            data = eval(f.read())
+        for page in data:
+            if isinstance(data[page], str):
+                data[page] = data[data[page]]
+            elif data[page] is not None:
+                for link in data[page]['links']:
+                    if data[page]['links'][link] is None and link in data:
+                        data[page]['links'][link] = data[link]
+                for link in data[page]['rev_links']:
+                    if data[page]['rev_links'][link] is None and link in data:
+                        data[page]['rev_links'][link] = data[link]
+        return (data,)
