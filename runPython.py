@@ -73,7 +73,7 @@ class RunPython(AnyNode):
             try:
                 # Call the generated function and get the result
                 result = locals_dict[function_name](any, input_data_2=any2)
-                #print(f"Function result: {result}")
+                # print(f"Function result: {result}")
             except Exception as e:
                 print(f"Error calling the function: {e}")
                 traceback.print_exc()
