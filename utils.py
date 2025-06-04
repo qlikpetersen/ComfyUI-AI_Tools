@@ -27,22 +27,24 @@ class String2Json:
     CATEGORY = "utils/string"
     RETURN_TYPES = ("JSON",)
     RETURN_NAMES = ("JSON",)
-
     FUNCTION = "string2json"
-
+    
     def string2json(self, stringIn):
-        if not isinstance(stringIn, list):
-            stringIn = stringIn.strip()
-            stringIn = stringIn.strip('```')
-            stringIn = stringIn.strip('json')
-            return json.dumps(stringIn)
         jsonOut = []
+        wasList = True
+        if not isinstance(stringIn, list):
+            wasList = False
+            stringIn = [stringIn]
         for item in stringIn:
             item = item.strip()
             item = item.strip('```')
             item = item.strip('json')
             jsonOut.append(json.loads(item))
-        return (jsonOut,)
+        if wasList:
+            return (jsonOut,)
+        else:
+            # If the input was not a list, return a single JSON object
+            return (jsonOut[0],) if jsonOut else None
 
 
 class Json2String:
@@ -60,12 +62,11 @@ class Json2String:
     CATEGORY = "utils/string"
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("STRING",)
-
     FUNCTION = "json2string"
 
     def json2string(self, JSON):
         if not isinstance(JSON, list):
-            return json.dumps(JSON)
+            return (json.dumps(JSON),)
         textOut = []
         for item in JSON:
             textOut.append(json.dumps(item))
@@ -167,4 +168,4 @@ class SaveSpiderData:
             else:
                 outputData[page] = None
         with open(filename, 'w', encoding='utf-8') as f:
-            f.write(outputData)
+            f.write(repr(outputData))
