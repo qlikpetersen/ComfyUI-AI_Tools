@@ -28,7 +28,7 @@ class String2Json:
     RETURN_TYPES = ("JSON",)
     RETURN_NAMES = ("JSON",)
     FUNCTION = "string2json"
-    
+
     def string2json(self, stringIn):
         jsonOut = []
         wasList = True

@@ -22,15 +22,19 @@ class DoLogin:
     RETURN_NAMES = ("Return URL", "Page Text", "Page Raw", "Browser Context")
     FUNCTION = "doLogin"
     CATEGORY = "web"
+    DESCRIPTION = "Logs into a webpage, loginLocators should be a JSON object with keys 'username', 'password', and 'loginButton' that correspond to the input field names and button ID on the login page."
 
     def doLogin(self, url, username, password, loginLocators):
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=False)
             page = browser.new_page()
             page.goto(url)
-            page.fill(f"input[name='{loginLocators['login']}']", username)
-            page.fill(f"input[name='{loginLocators['password']}']", password)
-            page.locator(f'#{loginLocators['loginButton']}').click()
+            # page.fill(f"input[name='{loginLocators['username']}']", username)
+            # page.fill(f"input[name='{loginLocators['password']}']", password)
+            # page.locator(f'#{loginLocators['loginButton']}').click()
+            page.locator(loginLocators['username']).fill(username)
+            page.locator(loginLocators['password']).fill(password)
+            page.locator(loginLocators['loginButton']).click()
             page.wait_for_load_state()
             page.wait_for_load_state(state="networkidle")
             return_url = page.url
