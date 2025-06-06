@@ -151,8 +151,10 @@ class SaveSpiderData:
 
     def save_data(self, filename, data):
         outputData = {}
+        print("Creating save structure")
         for page in data:
             if data[page]['url'] == page:
+                print(f"Appending {page} to outputData")
                 outputData[page] = {
                     "url": data[page]['url'],
                     "data": data[page]['data'],
@@ -162,13 +164,18 @@ class SaveSpiderData:
                     "depths_found": data[page]['depths_found'],
                 }
                 for link in data[page]['links']:
+                    print(f"\tNoting link to {link}")
                     outputData[page]['links'][link] = None
                 for link in data[page]['rev_links']:
+                    print(f"\tNoting rev_link to {link}")
                     outputData[page]['rev_links'][link] = None
             else:
-                outputData[page] = outputData[page]['url']
+                print(f"Noting {page} points to {data[page]['url']}")
+                outputData[page] = data[page]['url']
+        print(f"Done creating save structure, saving to file... as {filename}")
         with open(filename, 'w', encoding='utf-8') as f:
             f.write(repr(outputData))
+        print("Save Complete!")
         return (filename,)
 
 
