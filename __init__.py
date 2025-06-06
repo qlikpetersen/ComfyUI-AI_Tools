@@ -1,5 +1,5 @@
 from .webInteraction import DoLogin, HttpRequest, SpiderCrawl
-from .utils import Json2String, String2Json, CreateListString, CreateListJSON, PNGtoImage, SaveSpiderData, LoadSpiderData
+from .utils import Json2String, String2Json, CreateListString, CreateListJSON, PNGtoImage, SaveSpiderData, LoadSpiderData, SpiderSplit
 from .AI import Query_OpenAI, Image_Attachment, JSON_Attachment, String_Attachment
 from .runPython import RunPython
 
@@ -17,6 +17,7 @@ NODE_CLASS_MAPPINGS = {
     "PNGtoImage": PNGtoImage,
     "SaveSpiderData": SaveSpiderData,
     "LoadSpiderData": LoadSpiderData,
+    "SpiderSplit": SpiderSplit,
     "Query_OpenAI": Query_OpenAI,
     "Image_Attachment": Image_Attachment,
     "JSON_Attachment": JSON_Attachment,
@@ -36,6 +37,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "PNGtoImage": "PNG to Image",
     "SaveSpiderData": "Save Spider Data",
     "LoadSpiderData": "Load Spider Data",
+    "SpiderSplit": "Spider Split",
     "Query_OpenAI": "Query OpenAI",
     "Image_Attachment": "Image Attachment",
     "JSON_Attachment": "JSON Attachment",

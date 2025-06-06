@@ -207,3 +207,28 @@ class LoadSpiderData:
                     if data[page]['rev_links'][link] is None and link in data:
                         data[page]['rev_links'][link] = data[link]
         return (data,)
+
+
+class SpiderSplit:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "data": ("SPIDERDATA", {"forceInput": True}),
+            },
+        }
+
+    CATEGORY = "utils"
+    RETURN_TYPES = ("SPIDERDATA",)
+    RETURN_NAMES = ("UniquePageData",)
+    OUTPUT_IS_LIST = (True,)
+    FUNCTION = "spider_split"
+    OUTPUT_NODE = True
+
+    def spider_split(self, data):
+        outputData = []
+        for page in data:
+            if data[page]['url'] == page:
+                print(f"Appending {page} to outputData")
+                outputData.append({page: data[page]})
+        return (outputData,)
