@@ -140,7 +140,7 @@ class SaveSpiderData:
     def INPUT_TYPES(s):
         return {
             "required": {
-                "filename": ("STRING", {"forceInput": True}),
+                "filename": ("STRING", {"defailt": "SpiderData.spider"}),
                 "data": ("SPIDERDATA", {"forceInput": True}),
             },
         }
@@ -183,7 +183,7 @@ class LoadSpiderData:
     def INPUT_TYPES(s):
         return {
             "required": {
-                "filename": ("STRING", {"forceInput": True}),
+                "filename": ("STRING", {"defailt": "SpiderData.spider"}),
             },
         }
 
