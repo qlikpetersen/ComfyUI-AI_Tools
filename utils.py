@@ -236,6 +236,40 @@ class SpiderSplit:
         return (outputData,)
 
 
+class IncludeInSpiderData:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "data": ("SPIDERDATA", {"forceInput": True}),
+                "itemName": ("STRING", {"default": "LLM"}),
+                "newData": (AnyType("*"), {"forceInput": True, "tooltip": "This has to be an itterative run that includes all unique pages"}),
+            },
+        }
+
+    CATEGORY = "utils"
+    INPUT_IS_LIST = (False, False, True)
+    RETURN_TYPES = ("SPIDERDATA",)
+    RETURN_NAMES = ("spiderDataPlus",)
+    FUNCTION = "spider_add"
+    OUTPUT_NODE = True
+
+    def spider_add(self, data, itemName, newData):
+        data = data[0]
+        itemName = itemName[0]
+        pages = []
+        for page in data:
+            if data[page]['url'] == page:
+                pages.append(page)
+
+        for page, newItem in zip(pages, newData):
+            data[page].update({
+                itemName: newItem,
+            })
+
+        return (data,)
+
+
 class TextMultiSave:
     @classmethod
     def INPUT_TYPES(s):
