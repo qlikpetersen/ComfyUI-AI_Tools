@@ -158,18 +158,15 @@ class SaveSpiderData:
             if data[page]['url'] == page:
                 print(f"Appending {page} to outputData")
                 outputData[page] = {
-                    "url": data[page]['url'],
-                    "data": data[page]['data'],
-                    "screenshot": data[page]['screenshot'],
                     "links": {},
                     "rev_links": {},
-                    "depths_found": data[page]['depths_found'],
                 }
+                for item in data[page]:
+                    if item not in outputData[page]:
+                        outputData[page][item] = data[page][item]
                 for link in data[page]['links']:
-                    print(f"\tNoting link to {link}")
                     outputData[page]['links'][link] = None
                 for link in data[page]['rev_links']:
-                    print(f"\tNoting rev_link to {link}")
                     outputData[page]['rev_links'][link] = None
             else:
                 print(f"Noting {page} points to {data[page]['url']}")
