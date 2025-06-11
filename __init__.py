@@ -1,7 +1,8 @@
-from .webInteraction import DoLogin, HttpRequest, SpiderCrawl
-from .utils import Json2String, String2Json, CreateListString, CreateListJSON, PNGtoImage, SaveSpiderData, LoadSpiderData, SpiderSplit, IncludeInSpiderData, TextMultiSave
+from .webInteraction import DoLogin, HttpRequest
+from .utils import Json2String, String2Json, CreateListString, CreateListJSON, PNGtoImage, TextMultiSave
 from .AI import Query_OpenAI, Image_Attachment, JSON_Attachment, String_Attachment
 from .runPython import RunPython
+from .spider import SpiderCrawl, SaveSpiderData, LoadSpiderData, SpiderSplit, IncludeInSpiderData
 
 
 # A dictionary that contains all nodes you want to export with their names

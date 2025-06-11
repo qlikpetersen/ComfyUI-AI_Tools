@@ -6,6 +6,8 @@ import numpy as np
 from io import BytesIO
 from PIL import Image, ImageOps
 from dotenv import load_dotenv
+from .utils import AnyType
+from .runPython import RunPythonTool
 
 load_dotenv()
 MODELS = [
@@ -161,3 +163,57 @@ class String_Attachment:
         }
 
         return {"ui": {"json": jsonOut}, "result": (jsonOut,)}
+
+
+class GriptapeRunPython:
+    """
+    Griptape Tool to query Spider info
+    """
+    DESCRIPTION = "Griptape runPython."
+
+    @classmethod
+    def INPUT_TYPES(cls):  # pylint: disable = invalid-name, missing-function-docstring
+        return {
+            "required": {
+                "off_prompt": (
+                    "BOOLEAN",
+                    {
+                        "default": False,
+                        "label_on": "True (Keep output private)",
+                        "label_off": "False (Provide output to LLM)",
+                    },
+                ),
+                "description": ("STRING", {"default": "Run Python code in ComfyUI."}),
+                "variables": (
+                    "STRING",
+                    {
+                        "multiline": True,
+                        "default": '{"url": "Valid HTTP URL"}'
+                    }
+                ),
+                "script": (
+                    "STRING",
+                    {
+                        "multiline": True,
+                        "default": "def generated_function(input_data_1=None, input_data_2=None):\n    return input_data_1\n",
+                    }
+                ),
+            },
+            "optional": {
+                "any": (AnyType("*"),),
+                "any2": (AnyType("*"),),
+            },
+            "hidden": {
+                "unique_id": "UNIQUE_ID",
+                "extra_pnginfo": "EXTRA_PNGINFO",
+            },
+        }
+
+    CATEGORY = "openai"
+    RETURN_TYPES = ("TOOL_LIST",)
+    RETURN_NAMES = ("TOOL",)
+    FUNCTION = "create"
+
+    def create(self, **kwargs):
+        tool = RunPythonTool(**kwargs)
+        return ([tool],)

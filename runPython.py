@@ -1,16 +1,14 @@
 import traceback
 import numpy as np
+from .utils import AnyType
 from custom_nodes.anynode.nodes.any import AnyNode
-
-
-class AnyType(str):
-    """A special class that is always equal in not equal comparisons. Credit to pythongosssss"""
-
-    def __ne__(self, __value: object) -> bool:
-        return False
-
-
-any_type = AnyType("*")
+from attrs import Factory, define, field
+from schema import Literal, Schema
+from griptape.artifacts import ErrorArtifact, ListArtifact
+from griptape.chunkers import TextChunker
+from griptape.loaders import WebLoader
+from griptape.tools import BaseTool
+from griptape.utils.decorators import activity
 
 
 class RunPython(AnyNode):
@@ -24,8 +22,8 @@ class RunPython(AnyNode):
                 }),
             },
             "optional": {
-                "any": (any_type,),
-                "any2": (any_type,),
+                "any": (AnyType("*"),),
+                "any2": (AnyType("*"),),
             },
             "hidden": {
                 "unique_id": "UNIQUE_ID",
@@ -33,7 +31,7 @@ class RunPython(AnyNode):
             },
         }
     CATEGORY = "utils"
-    RETURN_TYPES = (any_type,)
+    RETURN_TYPES = (AnyType("*"),)
     RETURN_NAMES = ('any',)
     FUNCTION = "doit"
 
@@ -44,21 +42,15 @@ class RunPython(AnyNode):
             return (any,)
 
         result = None
-        # Generate a unique function name
         function_name = self.generate_function_name()
 
         if script.strip() == "":
             raise ValueError("You need to enter a script.")
 
         self.script = self.extract_imports(script)
-
-        # Modify the script to use the unique function name
         modified_script = self.script.replace('def generated_function', f'def {function_name}')
 
-        # Execute the stored script to define the unique function
         try:
-            # Define a dictionary to store globals and locals,
-            # updating it with imported libs from script and built-in functions
             globals_dict = {"__builtins__": __builtins__}
             self._prepare_globals(globals_dict)
             globals_dict.update({"np": np})
@@ -68,12 +60,9 @@ class RunPython(AnyNode):
             print("--- Exception During Exec ---")
             raise e
 
-        # Assuming the generated code defines a function named 'generated_function'
         if function_name in locals_dict:
             try:
-                # Call the generated function and get the result
                 result = locals_dict[function_name](any, input_data_2=any2)
-                # print(f"Function result: {result}")
             except Exception as e:
                 print(f"Error calling the function: {e}")
                 traceback.print_exc()
@@ -82,3 +71,26 @@ class RunPython(AnyNode):
             print(f"Function '{function_name}' not found in entered code.")
 
         return (result,)
+
+
+@define
+class RunPythonTool(BaseTool):
+    web_loader: WebLoader = field(default=Factory(lambda: WebLoader()), kw_only=True)
+    text_chunker: TextChunker = field(default=Factory(lambda: TextChunker(max_tokens=400)), kw_only=True)
+
+    @activity(
+        config={
+            "description": "Can be used to browse a web page and load its content",
+            "schema": Schema({Literal("url", description="Valid HTTP URL"): str}),
+        },
+    )
+    def get_content(self, params: dict) -> ListArtifact | ErrorArtifact:
+        url = params["values"]["url"]
+
+        try:
+            result = self.web_loader.load(url)
+            chunks = self.text_chunker.chunk(result)
+
+            return ListArtifact(chunks)
+        except Exception as e:
+            return ErrorArtifact("Error getting page content: " + str(e))
