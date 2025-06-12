@@ -5,10 +5,12 @@ from custom_nodes.anynode.nodes.any import AnyNode
 from attrs import Factory, define, field
 from schema import Literal, Schema
 from griptape.artifacts import ErrorArtifact, ListArtifact
-from griptape.chunkers import TextChunker
-from griptape.loaders import WebLoader
 from griptape.tools import BaseTool
 from griptape.utils.decorators import activity
+from griptape.configs import Defaults
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from griptape.drivers.prompt.base_prompt_driver import BasePromptDriver
 
 
 class RunPython(AnyNode):
@@ -75,8 +77,7 @@ class RunPython(AnyNode):
 
 @define
 class RunPythonTool(BaseTool):
-    web_loader: WebLoader = field(default=Factory(lambda: WebLoader()), kw_only=True)
-    text_chunker: TextChunker = field(default=Factory(lambda: TextChunker(max_tokens=400)), kw_only=True)
+    prompt_driver: BasePromptDriver = field(default=Factory(lambda: Defaults.drivers_config.prompt_driver))
 
     @activity(
         config={
@@ -84,7 +85,7 @@ class RunPythonTool(BaseTool):
             "schema": Schema({Literal("url", description="Valid HTTP URL"): str}),
         },
     )
-    def get_content(self, params: dict) -> ListArtifact | ErrorArtifact:
+    def query(self, params: dict) -> ListArtifact | ErrorArtifact:
         url = params["values"]["url"]
 
         try:

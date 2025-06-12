@@ -165,7 +165,7 @@ class String_Attachment:
         return {"ui": {"json": jsonOut}, "result": (jsonOut,)}
 
 
-class GriptapeRunPython:
+class RunPythonGriptapeToolNode:
     """
     Griptape Tool to query Spider info
     """
@@ -184,18 +184,19 @@ class GriptapeRunPython:
                     },
                 ),
                 "description": ("STRING", {"default": "Run Python code in ComfyUI."}),
-                "variables": (
+                "llmQuery": (
                     "STRING",
                     {
                         "multiline": True,
-                        "default": '{"url": "Valid HTTP URL"}'
-                    }
+                        "default": '[("url": "Valid HTTP URL",str)]',
+                        "tooltip": 'List of tupples for what the LLM is to send: ("name","description",type)\n  Can use Or() in type\nEx:\n[\n    ("query","A natural language search query",str),\n    ("content",\n        None,\n        Or(\n            str,\n            [\n                ("memory_name",str),\n                ("artifact_namespace",str)\n            ]\n        )\n    )\n]'
+                    },
                 ),
                 "script": (
                     "STRING",
                     {
                         "multiline": True,
-                        "default": "def generated_function(input_data_1=None, input_data_2=None):\n    return input_data_1\n",
+                        "default": "def generated_function(input_data_1=None, input_data_2=None, llmQueries=None):\n\n    return input_data_1\n",
                     }
                 ),
             },
@@ -212,8 +213,8 @@ class GriptapeRunPython:
     CATEGORY = "openai"
     RETURN_TYPES = ("TOOL_LIST",)
     RETURN_NAMES = ("TOOL",)
-    FUNCTION = "create"
+    FUNCTION = "runIt"
 
-    def create(self, **kwargs):
+    def runIt(self, **kwargs):
         tool = RunPythonTool(**kwargs)
         return ([tool],)

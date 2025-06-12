@@ -1,6 +1,6 @@
 from .webInteraction import DoLogin, HttpRequest
 from .utils import Json2String, String2Json, CreateListString, CreateListJSON, PNGtoImage, TextMultiSave
-from .AI import Query_OpenAI, Image_Attachment, JSON_Attachment, String_Attachment
+from .AI import Query_OpenAI, Image_Attachment, JSON_Attachment, String_Attachment, RunPythonGriptapeToolNode
 from .runPython import RunPython
 from .spider import SpiderCrawl, SaveSpiderData, LoadSpiderData, SpiderSplit, IncludeInSpiderData
 
@@ -27,6 +27,7 @@ NODE_CLASS_MAPPINGS = {
     "Image_Attachment": Image_Attachment,
     "JSON_Attachment": JSON_Attachment,
     "String_Attachment": String_Attachment,
+    "RunPythonGriptapeTool": RunPythonGriptapeToolNode,
 
     "RunPython": RunPython,
 }
@@ -52,6 +53,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "Image_Attachment": "Image Attachment",
     "JSON_Attachment": "JSON Attachment",
     "String_Attachment": "String Attachment",
+    "RunPythonGriptapeTool": "Run Python Griptape Tool",
 
     "RunPython": "Run Python",
 }
