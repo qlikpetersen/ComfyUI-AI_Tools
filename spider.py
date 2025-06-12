@@ -273,7 +273,7 @@ class RemoveCircularReferences:
     FUNCTION = "fix_data"
     OUTPUT_NODE = True
 
-    def fix_data(self, filename, data):
+    def fix_data(self, data):
         return (removeCircularReferences(data),)
 
 
