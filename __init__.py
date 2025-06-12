@@ -2,7 +2,7 @@ from .webInteraction import DoLogin, HttpRequest
 from .utils import Json2String, String2Json, CreateListString, CreateListJSON, PNGtoImage, TextMultiSave
 from .AI import Query_OpenAI, Image_Attachment, JSON_Attachment, String_Attachment, RunPythonGriptapeToolNode
 from .runPython import RunPython
-from .spider import SpiderCrawl, SaveSpiderData, LoadSpiderData, SpiderSplit, IncludeInSpiderData
+from .spider import SpiderCrawl, SaveSpiderData, LoadSpiderData, SpiderSplit, IncludeInSpiderData, RemoveCircularReferences, FixLinksAndRevLinks
 
 
 # A dictionary that contains all nodes you want to export with their names
@@ -21,6 +21,8 @@ NODE_CLASS_MAPPINGS = {
     "LoadSpiderData": LoadSpiderData,
     "SpiderSplit": SpiderSplit,
     "IncludeInSpiderData": IncludeInSpiderData,
+    "RemoveCircularReferences": RemoveCircularReferences,
+    "FixLinksAndRevLinks": FixLinksAndRevLinks,
     "TextMultiSave": TextMultiSave,
 
     "Query_OpenAI": Query_OpenAI,
@@ -47,6 +49,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "LoadSpiderData": "Load Spider Data",
     "SpiderSplit": "Spider Split",
     "IncludeInSpiderData": "Include in Spider Data",
+    "RemoveCircularReferences": "Remove Circular References",
+    "FixLinksAndRevLinks": "Fix Links and Rev Links",
     "TextMultiSave": "Text Multi Save",
 
     "Query_OpenAI": "Query OpenAI",

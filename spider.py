@@ -4,6 +4,46 @@ from playwright.sync_api import sync_playwright
 from .utils import AnyType
 
 
+def removeCircularReferences(spiderDataInput):
+    outputData = {}
+    print("Creating save structure")
+    for page in spiderDataInput:
+        if spiderDataInput[page]['url'] == page:
+            print(f"Appending {page} to outputData")
+            outputData[page] = {
+                "links": {},
+                "rev_links": {},
+            }
+            for item in spiderDataInput[page]:
+                if item not in outputData[page]:
+                    outputData[page][item] = spiderDataInput[page][item]
+            for link in spiderDataInput[page]['links']:
+                outputData[page]['links'][link] = None
+            for link in spiderDataInput[page]['rev_links']:
+                outputData[page]['rev_links'][link] = None
+        else:
+            print(f"Noting {page} points to {spiderDataInput[page]['url']}")
+            outputData[page] = spiderDataInput[page]['url']
+    return outputData
+
+
+def fixLinksAndRevLinks(spiderDataInput):
+    print("Now fixing links and rev_links")
+    for page in spiderDataInput:
+        if isinstance(spiderDataInput[page], str):
+            spiderDataInput[page] = spiderDataInput[spiderDataInput[page]]
+        elif spiderDataInput[page] is not None:
+            for link in spiderDataInput[page]['links']:
+                if spiderDataInput[page]['links'][link] is None and link in spiderDataInput:
+                    spiderDataInput[page]['links'][link] = spiderDataInput[link]
+            for link in spiderDataInput[page]['rev_links']:
+                if spiderDataInput[page]['rev_links'][link] is None and link in spiderDataInput:
+                    spiderDataInput[page]['rev_links'][link] = spiderDataInput[link]
+    print("Links fixed.")
+    print(f"Total of {len(list(set([spiderDataInput[page]['url'] for page in spiderDataInput])))} individual pages.")
+    return spiderDataInput
+
+
 class SpiderCrawl:
     def __init__(self):
         pass
@@ -189,25 +229,7 @@ class SaveSpiderData:
     OUTPUT_NODE = True
 
     def save_data(self, filename, data):
-        outputData = {}
-        print("Creating save structure")
-        for page in data:
-            if data[page]['url'] == page:
-                print(f"Appending {page} to outputData")
-                outputData[page] = {
-                    "links": {},
-                    "rev_links": {},
-                }
-                for item in data[page]:
-                    if item not in outputData[page]:
-                        outputData[page][item] = data[page][item]
-                for link in data[page]['links']:
-                    outputData[page]['links'][link] = None
-                for link in data[page]['rev_links']:
-                    outputData[page]['rev_links'][link] = None
-            else:
-                print(f"Noting {page} points to {data[page]['url']}")
-                outputData[page] = data[page]['url']
+        outputData = removeCircularReferences(data)
         print(f"Done creating save structure, saving to file... as {filename}")
         with open(filename, 'w', encoding='utf-8') as f:
             f.write(repr(outputData))
@@ -232,17 +254,45 @@ class LoadSpiderData:
     def load_data(self, filename):
         with open(filename, 'r', encoding='utf-8') as f:
             data = eval(f.read())
-        for page in data:
-            if isinstance(data[page], str):
-                data[page] = data[data[page]]
-            elif data[page] is not None:
-                for link in data[page]['links']:
-                    if data[page]['links'][link] is None and link in data:
-                        data[page]['links'][link] = data[link]
-                for link in data[page]['rev_links']:
-                    if data[page]['rev_links'][link] is None and link in data:
-                        data[page]['rev_links'][link] = data[link]
+        data = fixLinksAndRevLinks(data)
         return (data,)
+
+
+class RemoveCircularReferences:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "data": ("SPIDERDATA", {"forceInput": True}),
+            },
+        }
+
+    CATEGORY = "utils"
+    RETURN_TYPES = ("JSON",)
+    RETURN_NAMES = ("dataOut",)
+    FUNCTION = "fix_data"
+    OUTPUT_NODE = True
+
+    def fix_data(self, filename, data):
+        return (removeCircularReferences(data),)
+
+
+class FixLinksAndRevLinks:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "data": ("JSON", {"forceInput": True}),
+            },
+        }
+
+    CATEGORY = "utils"
+    RETURN_TYPES = ("SPIDERDATA",)
+    RETURN_NAMES = ("data",)
+    FUNCTION = "fix_data"
+
+    def fix_data(self, data):
+        return (fixLinksAndRevLinks(data),)
 
 
 class SpiderSplit:

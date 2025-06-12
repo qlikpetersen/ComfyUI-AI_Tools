@@ -183,7 +183,7 @@ class RunPythonGriptapeToolNode:
                         "label_off": "False (Provide output to LLM)",
                     },
                 ),
-                "description": ("STRING", {"default": "Run Python code in ComfyUI."}),
+                "description": ("STRING", {"default": "Dynamic Python Tool"}),
                 "llmQuery": (
                     "STRING",
                     {
@@ -215,6 +215,30 @@ class RunPythonGriptapeToolNode:
     RETURN_NAMES = ("TOOL",)
     FUNCTION = "runIt"
 
-    def runIt(self, **kwargs):
-        tool = RunPythonTool(**kwargs)
+    def parse_llm_query(self, llm_query):
+        # default: '[("url": "Valid HTTP URL",str)]'
+        # supports a list of tuples: [(name, description, type)]
+        # types are python types (str, int, etc) or Or(...)
+        import ast
+        from schema import Literal, Schema
+
+        # Try parsing user string into python list of tuples [(name, description, type)]
+        try:
+            # ast.literal_eval only allows ("name", "desc", type). For better UX, allow ':'
+            tuples = ast.literal_eval(llm_query.replace(":", ","))
+        except Exception:
+            return Schema({})
+        schema_args = {}
+        for item in tuples:
+            if len(item) == 3:
+                name, desc, typ = item
+                schema_args[Literal(name, description=desc)] = typ
+            elif len(item) == 2:
+                name, typ = item
+                schema_args[Literal(name)] = typ
+        return Schema(schema_args)
+
+    def runIt(self, description, llmQuery, **kwargs):
+        schema = self.parse_llm_query(llmQuery)
+        tool = RunPythonTool.with_config(description=description, schema=schema, **kwargs)
         return ([tool],)

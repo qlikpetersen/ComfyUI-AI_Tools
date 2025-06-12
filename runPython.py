@@ -2,15 +2,10 @@ import traceback
 import numpy as np
 from .utils import AnyType
 from custom_nodes.anynode.nodes.any import AnyNode
-from attrs import Factory, define, field
-from schema import Literal, Schema
+from attrs import define
+from griptape.utils.decorators import activity
 from griptape.artifacts import ErrorArtifact, ListArtifact
 from griptape.tools import BaseTool
-from griptape.utils.decorators import activity
-from griptape.configs import Defaults
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from griptape.drivers.prompt.base_prompt_driver import BasePromptDriver
 
 
 class RunPython(AnyNode):
@@ -77,21 +72,28 @@ class RunPython(AnyNode):
 
 @define
 class RunPythonTool(BaseTool):
-    prompt_driver: BasePromptDriver = field(default=Factory(lambda: Defaults.drivers_config.prompt_driver))
+    _dynamic_activity = None
 
-    @activity(
-        config={
-            "description": "Can be used to browse a web page and load its content",
-            "schema": Schema({Literal("url", description="Valid HTTP URL"): str}),
-        },
-    )
-    def query(self, params: dict) -> ListArtifact | ErrorArtifact:
-        url = params["values"]["url"]
+    @classmethod
+    def with_config(cls, description, schema, **kwargs):
+        # Create a new activity with the given config
+        # Returns a dynamically subclassed tool
+        def new_activity(self, params: dict):
+            # Minimal logic for demo; real code exec can go here
+            # This example returns the params wrapped in a ListArtifact
+            try:
+                # your python code tool logic here, now uses params
+                return ListArtifact([params])
+            except Exception as e:
+                return ErrorArtifact("Python code error: " + str(e))
 
-        try:
-            result = self.web_loader.load(url)
-            chunks = self.text_chunker.chunk(result)
+        new_activity = activity(
+            config={
+                "description": description,
+                "schema": schema,
+            }
+        )(new_activity)
 
-            return ListArtifact(chunks)
-        except Exception as e:
-            return ErrorArtifact("Error getting page content: " + str(e))
+        # Build a dynamic subclass so each instance gets its own activity
+        subclass = type("DynamicRunPythonTool", (cls,), {"query": new_activity})
+        return subclass(**kwargs)
