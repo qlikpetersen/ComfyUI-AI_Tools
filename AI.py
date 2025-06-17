@@ -188,8 +188,8 @@ class RunPythonGriptapeToolNode:
                     "STRING",
                     {
                         "multiline": True,
-                        "default": '[("url": "Valid HTTP URL",str)]',
-                        "tooltip": 'List of tupples for what the LLM is to send: ("name","description",type)\n  Can use Or() in type\nEx:\n[\n    ("query","A natural language search query",str),\n    ("content",\n        None,\n        Or(\n            str,\n            [\n                ("memory_name",str),\n                ("artifact_namespace",str)\n            ]\n        )\n    )\n]'
+                        "default": '{"url": ("Valid HTTP URL",str)}',
+                        "tooltip": 'Dictionary of tupples for what the LLM is to send: "name": ("description",type)\n  Can use Or() in type\nEx:\n[\n    "query": ("A natural language search query",str),\n    "content": (\n        None,\n        Or(\n            str,\n            [\n                ("memory_name",str),\n                ("artifact_namespace",str)\n            ]\n        )\n    )\n}'
                     },
                 ),
                 "script": (
@@ -217,28 +217,21 @@ class RunPythonGriptapeToolNode:
 
     def parse_llm_query(self, llm_query):
         # default: '[("url": "Valid HTTP URL",str)]'
-        # supports a list of tuples: [(name, description, type)]
+        # supports a dict of tuples: {name: (description, type)}
         # types are python types (str, int, etc) or Or(...)
         import ast
         from schema import Literal, Schema
 
-        # Try parsing user string into python list of tuples [(name, description, type)]
-        try:
-            # ast.literal_eval only allows ("name", "desc", type). For better UX, allow ':'
-            tuples = ast.literal_eval(llm_query.replace(":", ","))
-        except Exception:
-            return Schema({})
+        #params = ast.literal_eval(llm_query)
+        params = eval(llm_query)
         schema_args = {}
-        for item in tuples:
-            if len(item) == 3:
-                name, desc, typ = item
-                schema_args[Literal(name, description=desc)] = typ
-            elif len(item) == 2:
-                name, typ = item
-                schema_args[Literal(name)] = typ
+        for name in params:
+            desc, typ = params[name]
+            schema_args[Literal(name, description=desc)] = typ
         return Schema(schema_args)
 
     def runIt(self, description, llmQuery, **kwargs):
         schema = self.parse_llm_query(llmQuery)
-        tool = RunPythonTool.with_config(description=description, schema=schema, **kwargs)
+        tool = RunPythonTool(description=description, schema=schema, **kwargs)
+        #tool = RunPythonTool.with_config(description=description, schema=schema, **kwargs)
         return ([tool],)

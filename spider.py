@@ -29,19 +29,37 @@ def removeCircularReferences(spiderDataInput):
 
 def fixLinksAndRevLinks(spiderDataInput):
     print("Now fixing links and rev_links")
+    outputData = {}
+    for page in spiderDataInput:
+        if isinstance(spiderDataInput[page], dict):
+            outputData[page] = {'links': {}, 'rev_links': {}}
+            for item in spiderDataInput[page]:
+                if item not in ["links", "rev_links"]:
+                    outputData[page][item] = spiderDataInput[page][item]
     for page in spiderDataInput:
         if isinstance(spiderDataInput[page], str):
-            spiderDataInput[page] = spiderDataInput[spiderDataInput[page]]
+            outputData[page] = outputData[spiderDataInput[page]]
         elif spiderDataInput[page] is not None:
             for link in spiderDataInput[page]['links']:
-                if spiderDataInput[page]['links'][link] is None and link in spiderDataInput:
-                    spiderDataInput[page]['links'][link] = spiderDataInput[link]
+                if spiderDataInput[page]['links'][link] is None and link in outputData:
+                    outputData[page]['links'][link] = outputData[link]
+                else:
+                    outputData[page]['links'][link] = None
             for link in spiderDataInput[page]['rev_links']:
-                if spiderDataInput[page]['rev_links'][link] is None and link in spiderDataInput:
-                    spiderDataInput[page]['rev_links'][link] = spiderDataInput[link]
+                if spiderDataInput[page]['rev_links'][link] is None and link in outputData:
+                    outputData[page]['rev_links'][link] = outputData[link]
+                else:
+                    outputData[page]['rev_links'][link] = None
+    for page in outputData:
+        if not isinstance(outputData[page], dict):
+            print(f"Warning: {page} is not a dict, but {type(outputData[page])}, skipping.")
+            continue
+        if 'url' not in outputData[page]:
+            print(f"Warning: {page} has no 'url' key")
+
     print("Links fixed.")
-    print(f"Total of {len(list(set([spiderDataInput[page]['url'] for page in spiderDataInput])))} individual pages.")
-    return spiderDataInput
+    print(f"Total of {len(list(set([outputData[page]['url'] for page in outputData])))} individual pages.")
+    return outputData
 
 
 class SpiderCrawl:

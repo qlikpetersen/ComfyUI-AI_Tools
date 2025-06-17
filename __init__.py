@@ -1,9 +1,15 @@
+"""
+@author: kierdran
+@title: AI_Tools
+@nickname: ai_tools
+@description: Tools for agentic testing
+"""
+
 from .webInteraction import DoLogin, HttpRequest
 from .utils import Json2String, String2Json, CreateListString, CreateListJSON, PNGtoImage, TextMultiSave
 from .AI import Query_OpenAI, Image_Attachment, JSON_Attachment, String_Attachment, RunPythonGriptapeToolNode
 from .runPython import RunPython
 from .spider import SpiderCrawl, SaveSpiderData, LoadSpiderData, SpiderSplit, IncludeInSpiderData, RemoveCircularReferences, FixLinksAndRevLinks
-
 
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
