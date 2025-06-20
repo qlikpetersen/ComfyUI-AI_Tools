@@ -11,6 +11,9 @@ from .runPython import RunPythonTool
 
 load_dotenv()
 MODELS = [
+    "gpt-4.1-mini",
+    "gpt-4.1-nano",
+    "gpt-4.1",
     "gpt-4o",
     "gpt-4o-mini",
     "chatgpt-4o-latest",
@@ -44,7 +47,7 @@ class Query_OpenAI:
         system_message = {"role": "system", "content": system_prompt}
         user_message = {"role": "user", "content": [{"type": "text", "text": user_prompt}]}
 
-        print(type(attachments))
+        # print(type(attachments))
         # print(attachments)
 
         if attachments is not None:
@@ -70,6 +73,7 @@ class Query_OpenAI:
 
         # Extract and return the caption
         text_out = response.choices[0].message.content.strip()
+        print(f"OpenAI Response:\n'{text_out}',")
         return (text_out,)
 
 
@@ -172,7 +176,7 @@ class RunPythonGriptapeToolNode:
     DESCRIPTION = "Griptape runPython."
 
     @classmethod
-    def INPUT_TYPES(cls):  # pylint: disable = invalid-name, missing-function-docstring
+    def INPUT_TYPES(cls):
         return {
             "required": {
                 "off_prompt": (
@@ -184,11 +188,12 @@ class RunPythonGriptapeToolNode:
                     },
                 ),
                 "description": ("STRING", {"default": "Dynamic Python Tool"}),
+                "tool_name": ("STRING", {"default": "somethingCool"}),
                 "llmQuery": (
                     "STRING",
                     {
                         "multiline": True,
-                        "default": '{"url": ("Valid HTTP URL",str)}',
+                        "default": '{}',
                         "tooltip": 'Dictionary of tupples for what the LLM is to send: "name": ("description",type)\n  Can use Or() in type\nEx:\n[\n    "query": ("A natural language search query",str),\n    "content": (\n        None,\n        Or(\n            str,\n            [\n                ("memory_name",str),\n                ("artifact_namespace",str)\n            ]\n        )\n    )\n}'
                     },
                 ),
@@ -196,13 +201,12 @@ class RunPythonGriptapeToolNode:
                     "STRING",
                     {
                         "multiline": True,
-                        "default": "def generated_function(input_data_1=None, input_data_2=None, llmQueries=None):\n\n    return input_data_1\n",
+                        "default": "def generated_function(input_data_1=None, input_data_2=None, params=None):\n\n    return input_data_1\n",
                     }
                 ),
             },
             "optional": {
                 "any": (AnyType("*"),),
-                "any2": (AnyType("*"),),
             },
             "hidden": {
                 "unique_id": "UNIQUE_ID",
@@ -219,7 +223,6 @@ class RunPythonGriptapeToolNode:
         # default: '[("url": "Valid HTTP URL",str)]'
         # supports a dict of tuples: {name: (description, type)}
         # types are python types (str, int, etc) or Or(...)
-        import ast
         from schema import Literal, Schema
 
         #params = ast.literal_eval(llm_query)
@@ -233,5 +236,4 @@ class RunPythonGriptapeToolNode:
     def runIt(self, description, llmQuery, **kwargs):
         schema = self.parse_llm_query(llmQuery)
         tool = RunPythonTool(description=description, schema=schema, **kwargs)
-        #tool = RunPythonTool.with_config(description=description, schema=schema, **kwargs)
         return ([tool],)

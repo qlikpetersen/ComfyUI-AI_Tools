@@ -76,11 +76,12 @@ class RunPython(AnyNode):
 class RunPythonTool(BaseTool):
     _dynamic_activity = None
 
-    def __init__(self, off_prompt, description, schema, script, any=None, any2=None, *args, **kwargs):
+    def __init__(self, off_prompt, description, schema, tool_name, script, any=None, any2=None, *args, **kwargs):
         super().__init__(*args)
         self.off_prompt = off_prompt
         self.description = description
         self.schema = schema
+        self.name = tool_name
         self.script = script
         self.any_input = any
         self.any2_input = any2
