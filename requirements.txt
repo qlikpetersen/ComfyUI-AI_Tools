@@ -1,0 +1,2 @@
+playwright>=1.53.0,<1.54.0  # null
+openai>=1.93.2,<1.94.0  # null

@@ -18,8 +18,9 @@ uv run comfy install --restore
 cd custom_nodes
 git clone https://github.com/qlikpetersen/ComfyUI-AI_Tools
 cd ..
+
 cp custom_nodes/ComfyUI-AI_Tools/extraStuff/run.* .
 chmod 755 run.sh
 
-
+uv pip install -r custom_nodes/ComfyUI-AI_Tools/requirements.txt
 
