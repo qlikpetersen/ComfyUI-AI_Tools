@@ -225,7 +225,7 @@ class RunPythonGriptapeToolNode:
         # types are python types (str, int, etc) or Or(...)
         from schema import Literal, Schema
 
-        #params = ast.literal_eval(llm_query)
+        # params = ast.literal_eval(llm_query)
         params = eval(llm_query)
         schema_args = {}
         for name in params:

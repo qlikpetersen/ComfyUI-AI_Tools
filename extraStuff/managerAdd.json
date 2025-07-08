@@ -1,0 +1,15 @@
+{
+    "custom_nodes": [
+        {
+            "author": "KierPetersen",
+            "title": "ComfyUI-AI_Tools for QualityLogic",
+            "id": "comfyui-ai-tools",
+            "reference": "https://github.com/qlikpetersen/ComfyUI-AI_Tools",
+            "files": [
+                "https://github.com/qlikpetersen/ComfyUI-AI_Tools"
+            ],
+            "install_type": "git-clone",
+            "description": "A set of AI, Web, and text tools for QualityLogic"
+        }
+    ]
+}
