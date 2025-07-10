@@ -28,4 +28,6 @@ cp custom_nodes/ComfyUI-AI_Tools/extraStuff/run.* .
 chmod 755 run.sh
 
 uv pip install -r custom_nodes/ComfyUI-AI_Tools/requirements.txt
+uv pip install -r requirements.txt
 
+uv run playwright install

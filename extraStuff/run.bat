@@ -1,2 +1,2 @@
 @ECHO OFF
-uv run python main.py
+uv run python main.py --cpu --auto-launch

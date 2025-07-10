@@ -1,3 +1,3 @@
 #!/bin/bash
 
-uv run python main.py
+uv run python main.py --cpu --auto-launch
