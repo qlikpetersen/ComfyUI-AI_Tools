@@ -6,6 +6,7 @@ if ([ $? = 1 ]); then
   exit 1
 fi
 
+pyenv update
 pyenv install 3.12.9
 pyenv global 3.12.9
 
