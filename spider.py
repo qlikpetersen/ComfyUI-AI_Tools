@@ -1,6 +1,7 @@
 import re
 from urllib.parse import urljoin, urlparse
 from playwright.sync_api import sync_playwright
+from playwright.async_api import async_playwright
 from .utils import AnyType
 
 
@@ -103,7 +104,7 @@ class SpiderCrawl:
     RETURN_NAMES = ("Web Data", "Browser Context")
     FUNCTION = "crawl"
 
-    def crawl(self, url, depth, offsite, resetContextToBase, ignoreQueryParams, context=None):
+    async def crawl(self, url, depth, offsite, resetContextToBase, ignoreQueryParams, context=None):
         print(url, depth, offsite, context, resetContextToBase, ignoreQueryParams)
         url = self.cleanup_urls(url, ignoreQueryParams)
         purl = urlparse(url)
@@ -111,26 +112,29 @@ class SpiderCrawl:
         webData = {}
         urlsToScrape = [(url, 1)]
 
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=False)
-            browser_context = browser.new_context()
+        ap = async_playwright();
+        p = await ap.start()
+        #with sync_playwright() as p:
+        if True:
+            browser = await p.chromium.launch(headless=False)
+            browser_context = await browser.new_context()
             if context:
-                browser_context = browser.new_context(storage_state=context)
-            page = browser_context.new_page()
+                browser_context = await browser.new_context(storage_state=context)
+            page = await browser_context.new_page()
             while urlsToScrape:
                 current_url, current_depth = urlsToScrape.pop(0)
                 print(f"URLs to scrape: {len(urlsToScrape)} | Current URL: {current_url} | Depth: {current_depth}")
                 if resetContextToBase and current_depth != 0:
-                    page.close()
+                    await page.close()
                     if context:
-                        browser_context = browser.new_context(storage_state=context)
+                        browser_context = await browser.new_context(storage_state=context)
                     else:
-                        browser_context = browser.new_context()
-                    page = browser_context.new_page()
-                page.goto(current_url, timeout=120000)
-                page.wait_for_load_state()
+                        browser_context = await browser.new_context()
+                    page = await browser_context.new_page()
+                await page.goto(current_url, timeout=120000)
+                await page.wait_for_load_state()
                 try:
-                    page.wait_for_load_state(state="networkidle")
+                    await page.wait_for_load_state(state="networkidle")
                 except Exception as e:
                     print(f"Warning: wait_for_load_state(networkidle) failed: {e}")
                 loadedUrl = self.cleanup_urls(page.url, ignoreQueryParams)
@@ -138,15 +142,15 @@ class SpiderCrawl:
                 webData.update({
                     loadedUrl: {
                         "url": loadedUrl,
-                        "data": page.content(),
-                        "screenshot": page.screenshot(full_page=True),
+                        "data": await page.content(),
+                        "screenshot": await page.screenshot(full_page=True),
                         "links": {},
                         "rev_links": {},
                         "depths_found": [current_depth-1],
                     }
                 })
                 if resetContextToBase:
-                    webData[loadedUrl].update({"context": browser_context.storage_state()})
+                    webData[loadedUrl].update({"context": await browser_context.storage_state()})
                 if loadedUrl != current_url:
                     webData.update({current_url: webData[loadedUrl]})
                 for storedPage in webData:
@@ -155,7 +159,7 @@ class SpiderCrawl:
                         webData[loadedUrl]['rev_links'][storedPage] = webData[storedPage]
                         webData[loadedUrl]['depths_found'].append(webData[storedPage]['depths_found'][0]+1)
 
-                links = self.extract_links(page.content(), loadedUrl)
+                links = self.extract_links(await page.content(), loadedUrl)
                 for link in links:
                     cleaned_link = self.cleanup_urls(link, ignoreQueryParams)
                     cleaned_urlsTBS = self.cleanup_urls([sUrl for sUrl, d in urlsToScrape], ignoreQueryParams)
@@ -169,11 +173,11 @@ class SpiderCrawl:
                             urlsToScrape.append((link, current_depth + 1))
                         if (not link.startswith('javascript:')):
                             webData[loadedUrl]['links'][cleaned_link] = None
-            contextOut = browser_context.storage_state()
+            contextOut = await browser_context.storage_state()
             if resetContextToBase:
                 contextOut = context
-            contextOut = browser_context.storage_state()
-            browser.close()
+            contextOut = await browser_context.storage_state()
+            await browser.close()
 
             print("Crawling completed.")
             print("Now fixing links and rev_links")
