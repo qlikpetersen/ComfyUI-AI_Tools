@@ -6,9 +6,9 @@ if ([ $? = 1 ]); then
   exit 1
 fi
 
-export PATH="`echo "$PATH" | awk -F ":" 'BEGIN {IGNORECASE=1;first=1} { print FN; for(i=1;i <= NF; i=i+1) { if(match($i,"python") == 0) {if(first!=1) printf(":"); printf("%s",$i); first=0} } }'`"
-unexport PYTHONPATH
-unexport PYTHON_PATH
+#export PATH="`echo "$PATH" | awk -F ":" 'BEGIN {IGNORECASE=1;first=1} { print FN; for(i=1;i <= NF; i=i+1) { if(match($i,"python") == 0) {if(first!=1) printf(":"); printf("%s",$i); first=0} } }'`"
+#export -n PYTHONPATH
+#export -n PYTHON_PATH
 
 pyenv update
 pyenv install 3.12.9
@@ -17,7 +17,7 @@ pyenv global 3.12.9
 pythonVersion=`python --version`
 
 if ([ "$pythonVersion" != "Python 3.12.9" ]); then
-  echo Python version error. Should be 3.12.9 but recieved $pythonVersion
+  echo Python version error. Should be 3.12.9 but received $pythonVersion
   echo
   exit 1
 fi
@@ -28,10 +28,10 @@ cd ~
 git clone https://github.com/comfyanonymous/ComfyUI ComfyUI
 cd ~/ComfyUI
 
-uv venv
-uv pip install pip comfy-cli 
-uv run comfy set-default .
-uv run comfy install --restore
+python -m uv venv
+python -m uv pip install pip comfy-cli 
+python -m uv run comfy set-default .
+python -m uv run comfy install --restore
 
 cd custom_nodes
 git clone https://github.com/qlikpetersen/ComfyUI-AI_Tools
