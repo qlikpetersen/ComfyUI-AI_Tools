@@ -5,8 +5,8 @@
 2. pyenv - Run the following in PowerShell: `Invoke-WebRequest -UseBasicParsing -Uri "https://raw.githubusercontent.com/pyenv-win/pyenv-win/master/pyenv-win/install-pyenv-win.ps1" -OutFile "./install-pyenv-win.ps1"; &"./install-pyenv-win.ps1"`
  
 ## Mac
-1. Git - Download from: https://git-scm.com/downloads
-2. brew - Instructions on the homebrew website: https://brew.sh/
+1. brew - Instructions on the homebrew website: https://brew.sh/
+2. Git - Download from: https://git-scm.com/downloads
 
 # Installation
 Note: we will be installing python version 3.12.9 through pyenv. If you have issues installing, first check if you are getting the correct python version.

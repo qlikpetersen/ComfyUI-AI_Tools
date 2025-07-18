@@ -39,9 +39,11 @@ cd ..
 cp custom_nodes/ComfyUI-AI_Tools/extraStuff/run.* .
 chmod 755 run.sh
 
+uv pip install -r requirements.txt
+uv pip install -r custom_nodes/anynode/requirements.txt
 uv pip install -r custom_nodes/ComfyUI-AI_Tools/requirements.txt
 
-uv playwright install
+uv run playwright install
 
 echo
 echo Execute run.sh from `pwd` to start ComfyUI
