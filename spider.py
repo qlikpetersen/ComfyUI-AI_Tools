@@ -112,7 +112,7 @@ class SpiderCrawl:
         webData = {}
         urlsToScrape = [(url, 1)]
 
-        ap = async_playwright();
+        ap = async_playwright()
         p = await ap.start()
         #with sync_playwright() as p:
         if True:
@@ -191,7 +191,7 @@ class SpiderCrawl:
                             webData[link]['rev_links'][page] = webData[page]
             print("Links fixed.")
             print(f"Total of {len(list(set([webData[page]['url'] for page in webData])))} individual pages.")
-            ap.close()
+            p.stop()
         return (webData, contextOut,)
 
     def cleanup_urls(self, urls, stripQueryParams=True):
