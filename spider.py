@@ -191,6 +191,7 @@ class SpiderCrawl:
                             webData[link]['rev_links'][page] = webData[page]
             print("Links fixed.")
             print(f"Total of {len(list(set([webData[page]['url'] for page in webData])))} individual pages.")
+            ap.close()
         return (webData, contextOut,)
 
     def cleanup_urls(self, urls, stripQueryParams=True):
@@ -205,6 +206,8 @@ class SpiderCrawl:
                 parsed_url = urlparse(url)
                 cleaned_url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
                 outputUrls.append(cleaned_url.rstrip('/'))
+            else:
+                outputUrls.append(url.rstrip('/'))
         if len(outputUrls) == 1:
             return outputUrls[0]
         return outputUrls
