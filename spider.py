@@ -92,7 +92,8 @@ class SpiderCrawl:
                 "depth": ("INT", {"default": 0}),
                 "offsite": ("BOOLEAN", {"default": False}),
                 "resetContextToBase": ("BOOLEAN", {"default": False}),
-                "ignoreQueryParams": ("BOOLEAN", {"default": True}),
+                "passQueryRegex": ("STRING", {"default": ""}),
+                "postponePageRegex": ("STRING", {"default": ""}),
             },
             "optional": {
                 "context": ("JSON", {"forceInput": True})
@@ -104,13 +105,14 @@ class SpiderCrawl:
     RETURN_NAMES = ("Web Data", "Browser Context")
     FUNCTION = "crawl"
 
-    async def crawl(self, url, depth, offsite, resetContextToBase, ignoreQueryParams, context=None):
-        print(url, depth, offsite, context, resetContextToBase, ignoreQueryParams)
-        url = self.cleanup_urls(url, ignoreQueryParams)
+    async def crawl(self, url, depth, offsite, resetContextToBase, passQueryRegex, postponePageRegex, context=None):
+        print(url, depth, offsite, context, resetContextToBase, passQueryRegex, postponePageRegex)
+        url = self.cleanup_urls(url, passQueryRegex)
         purl = urlparse(url)
         baseURL = f"{purl.scheme}://{purl.netloc}/"
         webData = {}
         urlsToScrape = [(url, 1)]
+        urlsForEnd = []
 
         ap = async_playwright()
         p = await ap.start()
@@ -121,9 +123,17 @@ class SpiderCrawl:
             if context:
                 browser_context = await browser.new_context(storage_state=context)
             page = await browser_context.new_page()
-            while urlsToScrape:
-                current_url, current_depth = urlsToScrape.pop(0)
-                print(f"URLs to scrape: {len(urlsToScrape)} | Current URL: {current_url} | Depth: {current_depth}")
+            while urlsToScrape or urlsForEnd:
+                if urlsToScrape:
+                    current_url, current_depth = urlsToScrape.pop(0)
+                    if postponePageRegex != "" and re.search(postponePageRegex, current_url):
+                        print(f"Postponing URL to end of scrape: {current_url}")
+                        urlsForEnd.append((current_url, current_depth))
+                        continue
+                else:
+                    current_url, current_depth = urlsForEnd.pop(0)
+                print(f"URLs stored and waiting: {len(list(set([webData[page]['url'] for page in webData])))}:{len(urlsToScrape)+len(urlsForEnd)} | Current URL: {current_url} | Depth: {current_depth}")
+
                 if resetContextToBase and current_depth != 0:
                     await page.close()
                     if context:
@@ -137,8 +147,8 @@ class SpiderCrawl:
                     await page.wait_for_load_state(state="networkidle")
                 except Exception as e:
                     print(f"Warning: wait_for_load_state(networkidle) failed: {e}")
-                loadedUrl = self.cleanup_urls(page.url, ignoreQueryParams)
-                current_url = self.cleanup_urls(current_url, ignoreQueryParams)
+                loadedUrl = self.cleanup_urls(page.url, passQueryRegex)
+                current_url = self.cleanup_urls(current_url, passQueryRegex)
                 webData.update({
                     loadedUrl: {
                         "url": loadedUrl,
@@ -152,6 +162,7 @@ class SpiderCrawl:
                 if resetContextToBase:
                     webData[loadedUrl].update({"context": await browser_context.storage_state()})
                 if loadedUrl != current_url:
+                    print(f"Attempted to load {current_url} but recieved {loadedUrl}. Linking in data.")
                     webData.update({current_url: webData[loadedUrl]})
                 for storedPage in webData:
                     if loadedUrl in webData[storedPage]['links']:
@@ -161,16 +172,16 @@ class SpiderCrawl:
 
                 links = self.extract_links(await page.content(), loadedUrl)
                 for link in links:
-                    cleaned_link = self.cleanup_urls(link, ignoreQueryParams)
-                    cleaned_urlsTBS = self.cleanup_urls([sUrl for sUrl, d in urlsToScrape], ignoreQueryParams)
+                    cleaned_link = self.cleanup_urls(link, passQueryRegex)
+                    cleaned_urlsTBS = [sUrl for sUrl, d in urlsToScrape] + [sUrl for sUrl, d in urlsForEnd]
                     if cleaned_link not in webData and cleaned_link not in cleaned_urlsTBS:
                         if (
                             (depth == 0 or current_depth < depth)
-                            and (offsite or link.startswith(baseURL))
+                            and (offsite or cleaned_link.startswith(baseURL))
                             and (not link.startswith('javascript:'))
                             and not any(cleaned_link.lower().endswith(ext) for ext in self.downloadables)
                         ):
-                            urlsToScrape.append((link, current_depth + 1))
+                            urlsToScrape.append((cleaned_link, current_depth + 1))
                         if (not link.startswith('javascript:')):
                             webData[loadedUrl]['links'][cleaned_link] = None
             contextOut = await browser_context.storage_state()
@@ -194,7 +205,7 @@ class SpiderCrawl:
             p.stop()
         return (webData, contextOut,)
 
-    def cleanup_urls(self, urls, stripQueryParams=True):
+    def cleanup_urls(self, urls, passQueryRegex=""):
         """
         Cleans up the URL by removing query parameters and trailing slashes.
         """
@@ -202,12 +213,18 @@ class SpiderCrawl:
         if not isinstance(urls, list):
             urls = [urls]
         for url in urls:
-            if stripQueryParams:
-                parsed_url = urlparse(url)
-                cleaned_url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
-                outputUrls.append(cleaned_url.rstrip('/'))
+            sendParams = ""
+            parsed_url = urlparse(url)
+            if passQueryRegex and parsed_url.query:
+                #print(f"incoming Query Parameters: {parsed_url.query}")
+                queryParams = [ f"{key}={val}" for key, val in [ item.split("=") for item in re.split("&amp;|&",parsed_url.query) ] if re.fullmatch(passQueryRegex,key) ]
+                sendParams += "&amp;".join(queryParams)
+                #print(f"outgoing Query Parameters: {sendParams}")
+            if sendParams != "":
+                cleaned_url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}?{sendParams}"
             else:
-                outputUrls.append(url.rstrip('/'))
+                cleaned_url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
+            outputUrls.append(cleaned_url.rstrip('/'))
         if len(outputUrls) == 1:
             return outputUrls[0]
         return outputUrls
